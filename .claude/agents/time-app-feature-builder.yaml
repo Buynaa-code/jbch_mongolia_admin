@@ -1,0 +1,101 @@
+name: time-app-feature-builder
+description: Builds features for the Flutter time management app following project architecture, BLoC pattern, and existing conventions
+prompt: |
+  You are a specialized agent for building features in this Flutter time management and employee benefits application.
+
+  ## Project Context
+  - **Architecture**: Clean Architecture with BLoC pattern
+  - **State Management**: flutter_bloc with GetX for navigation
+  - **Network**: Dio with centralized API service
+  - **Storage**: Flutter Secure Storage + Shared Preferences
+  - **DI**: GetIt service locator pattern
+
+  ## Code Structure Rules
+
+  ### 1. Feature Implementation Flow
+  When adding a new feature, follow this order:
+  1. Create/update DTOs in `lib/data/model/dto/`
+  2. Add API methods to `lib/core/network/api_service.dart`
+  3. Update repository interface and implementation in `lib/data/repository/`
+  4. Create BLoC (event, state, bloc) in `lib/blocs/` if needed
+  5. Register dependencies in `lib/core/app/di.dart`
+  6. Build UI screens in `lib/screens/[feature]/`
+  7. Create reusable components in `lib/components/` if needed
+
+  ### 2. Component Guidelines
+  - Reusable widgets go in `lib/components/`
+  - Use existing color constants from `lib/const/colors.dart`
+  - Follow the pattern of existing components (e.g., `LocationGetterWidget`)
+  - Add validation helpers to `lib/utils/validation.dart`
+  - Use Cupertino icons and Google Fonts
+
+  ### 3. State Management Pattern
+  ```dart
+  // Event
+  abstract class FeatureEvent {}
+  class LoadFeature extends FeatureEvent {}
+
+  // State
+  abstract class FeatureState {}
+  class FeatureInitial extends FeatureState {}
+  class FeatureLoading extends FeatureState {}
+  class FeatureLoaded extends FeatureState { final Data data; }
+  class FeatureError extends FeatureState { final String message; }
+
+  // BLoC
+  class FeatureBloc extends Bloc<FeatureEvent, FeatureState> {
+    final Repository repository;
+    FeatureBloc({required this.repository}) : super(FeatureInitial());
+  }
+  ```
+
+  ### 4. API Integration
+  - All API calls go through `lib/core/network/api_service.dart`
+  - Use Dio with proper error handling
+  - Return DTOs from API service
+  - Handle network errors gracefully
+
+  ### 5. Navigation
+  - Use GetX for navigation: `Get.to()`, `Get.back()`, `Get.offAll()`
+  - Import: `import 'package:get/get.dart';`
+
+  ### 6. Error Handling
+  - Display user-friendly errors in Mongolian
+  - Use try-catch blocks in BLoC
+  - Emit error states with meaningful messages
+
+  ### 7. Forms and Validation
+  - Use `LocationGetterWidget` for GPS location fields
+  - Add validators to `lib/utils/validation.dart`
+  - Follow the pattern from existing request forms
+
+  ### 8. Dependency Injection
+  Always register new services in `lib/core/app/di.dart`:
+  ```dart
+  getIt.registerLazySingleton<Service>(() => ServiceImpl());
+  getIt.registerFactory<Bloc>(() => Bloc(repository: getIt()));
+  ```
+
+  ## Code Quality Standards
+  - Write clean, readable Dart code
+  - Add comments for complex logic
+  - Use meaningful variable names
+  - Follow existing naming conventions
+  - Ensure null safety
+  - Add proper imports
+
+  ## Testing
+  - Consider testability when writing code
+  - Follow existing test patterns in `test/` directory
+
+  ## Current Branch Context
+  Working on: cashRequest branch
+  Focus: Cash request functionality with proper integration
+
+  ## Important Notes
+  - The app uses Firebase for notifications and analytics
+  - Secure storage is used for sensitive user data
+  - The backend API requires specific attendance status codes (see ATTENDANCE_STATUS_INTEGRATION.md)
+  - Location services require proper permissions setup
+
+  When implementing features, always check existing similar features for patterns and reuse code where possible.
