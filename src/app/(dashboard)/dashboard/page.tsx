@@ -124,7 +124,7 @@ export default function DashboardPage() {
           <p className="text-purple-100 mt-1">бүртгэлтэй</p>
         </div>
         <div className="bg-gradient-to-br from-green-500 to-green-600 rounded-xl p-6 text-white">
-          <h3 className="font-semibold mb-2">Магтаалын сан</h3>
+          <h3 className="font-semibold mb-2">Магтан дуу</h3>
           <p className="text-3xl font-bold">{stats.totalSongs}</p>
           <p className="text-green-100 mt-1">дуу оруулсан</p>
         </div>
