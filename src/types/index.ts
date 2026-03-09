@@ -91,6 +91,8 @@ export interface Verse {
   reference: string;
   category: string;
   translation?: string;
+  isVerseOfWeek?: boolean;
+  weekOf?: string;
   createdAt: string;
   updatedAt?: string;
 }
