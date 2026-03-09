@@ -1,38 +1,28 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useCallback } from 'react';
 import { Verse } from '@/types';
 import { VerseFormData } from '@/lib/validations';
 import { Button, ConfirmDialog, PageLoader } from '@/components/ui';
 import { VerseList, VerseForm } from '@/components/verses';
 import versesService from '@/services/verses.service';
+import { getErrorMessage } from '@/lib/errors';
+import { useAsyncData } from '@/hooks';
 import toast from 'react-hot-toast';
 import { Plus } from 'lucide-react';
 
 export default function VersesPage() {
-  const [verses, setVerses] = useState<Verse[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [selectedVerse, setSelectedVerse] = useState<Verse | null>(null);
   const [deleteVerse, setDeleteVerse] = useState<Verse | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [verseOfWeekTarget, setVerseOfWeekTarget] = useState<Verse | null>(null);
+  const [isSettingVerseOfWeek, setIsSettingVerseOfWeek] = useState(false);
 
-  useEffect(() => {
-    fetchVerses();
-  }, []);
-
-  const fetchVerses = async () => {
-    try {
-      setIsLoading(true);
-      const data = await versesService.getAll();
-      setVerses(data);
-    } catch (error) {
-      toast.error('Ишлэлүүдийг татахад алдаа гарлаа');
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  // Fetch verses with automatic abort on unmount
+  const fetchVerses = useCallback(() => versesService.getAll(), []);
+  const { data: verses = [], isLoading, refetch } = useAsyncData(fetchVerses);
 
   const handleCreate = () => {
     setSelectedVerse(null);
@@ -58,10 +48,10 @@ export default function VersesPage() {
         await versesService.create(data);
         toast.success('Ишлэл амжилттай нэмэгдлээ');
       }
-      await fetchVerses();
+      await refetch();
       setIsFormOpen(false);
     } catch (error) {
-      toast.error('Алдаа гарлаа. Дахин оролдоно уу.');
+      toast.error(getErrorMessage(error));
     } finally {
       setIsSubmitting(false);
     }
@@ -74,12 +64,32 @@ export default function VersesPage() {
       setIsDeleting(true);
       await versesService.delete(deleteVerse.id);
       toast.success('Ишлэл амжилттай устгагдлаа');
-      await fetchVerses();
+      await refetch();
       setDeleteVerse(null);
     } catch (error) {
-      toast.error('Устгахад алдаа гарлаа');
+      toast.error(getErrorMessage(error));
     } finally {
       setIsDeleting(false);
+    }
+  };
+
+  const handleSetVerseOfWeek = (verse: Verse) => {
+    setVerseOfWeekTarget(verse);
+  };
+
+  const handleConfirmVerseOfWeek = async () => {
+    if (!verseOfWeekTarget) return;
+
+    try {
+      setIsSettingVerseOfWeek(true);
+      await versesService.setVerseOfWeek(verseOfWeekTarget.id, new Date());
+      toast.success('Долоо хоногийн ишлэл амжилттай тохируулагдлаа');
+      await refetch();
+      setVerseOfWeekTarget(null);
+    } catch (error) {
+      toast.error(getErrorMessage(error));
+    } finally {
+      setIsSettingVerseOfWeek(false);
     }
   };
 
@@ -107,6 +117,7 @@ export default function VersesPage() {
         verses={verses}
         onEdit={handleEdit}
         onDelete={handleDelete}
+        onSetVerseOfWeek={handleSetVerseOfWeek}
       />
 
       {/* Verse Form Modal */}
@@ -129,6 +140,19 @@ export default function VersesPage() {
         cancelText="Цуцлах"
         variant="danger"
         isLoading={isDeleting}
+      />
+
+      {/* Set Verse of Week Confirmation */}
+      <ConfirmDialog
+        isOpen={!!verseOfWeekTarget}
+        onClose={() => setVerseOfWeekTarget(null)}
+        onConfirm={handleConfirmVerseOfWeek}
+        title="Долоо хоногийн ишлэл"
+        message={`"${verseOfWeekTarget?.reference}" ишлэлийг энэ долоо хоногийн ишлэл болгох уу?`}
+        confirmText="Тохируулах"
+        cancelText="Цуцлах"
+        variant="info"
+        isLoading={isSettingVerseOfWeek}
       />
     </div>
   );

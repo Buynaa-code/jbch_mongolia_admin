@@ -2,6 +2,7 @@ import api from './api';
 import { LoginCredentials, LoginResponse, User } from '@/types';
 import { mockUsers, mockCredentials } from '@/data/mock';
 import { sleep } from '@/lib/utils';
+import { storage, STORAGE_KEYS } from '@/lib/storage';
 
 const USE_MOCK = process.env.NEXT_PUBLIC_USE_MOCK_DATA === 'true';
 
@@ -40,8 +41,12 @@ export const authService = {
       throw new Error('И-мэйл эсвэл нууц үг буруу байна');
     }
 
-    const response = await api.post<LoginResponse>('/auth/login', credentials);
-    return response.data;
+    const response = await api.post<{ user: User; accessToken: string; refreshToken: string }>('/auth/login', credentials);
+    // Map API response to expected format
+    return {
+      user: response.data.user,
+      token: response.data.accessToken,
+    };
   },
 
   async logout(): Promise<void> {
@@ -56,9 +61,9 @@ export const authService = {
   async getCurrentUser(): Promise<User> {
     if (USE_MOCK) {
       await sleep(300);
-      const storedUser = localStorage.getItem('user');
+      const storedUser = storage.get<User>(STORAGE_KEYS.USER);
       if (storedUser) {
-        return JSON.parse(storedUser);
+        return storedUser;
       }
       throw new Error('No user found');
     }

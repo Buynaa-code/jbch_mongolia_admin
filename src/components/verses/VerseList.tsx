@@ -3,14 +3,15 @@
 import React, { useState } from 'react';
 import { Verse, Column } from '@/types';
 import { cn, truncateText } from '@/lib/utils';
-import { Table, Badge, Button, Card } from '@/components/ui';
-import { Pencil, Trash2, BookOpen, LayoutGrid, List } from 'lucide-react';
+import { Table, Badge, Button, Card, TableSkeleton, CardGridSkeleton } from '@/components/ui';
+import { Pencil, Trash2, BookOpen, LayoutGrid, List, Star } from 'lucide-react';
 
 interface VerseListProps {
   verses: Verse[];
   isLoading?: boolean;
   onEdit: (verse: Verse) => void;
   onDelete: (verse: Verse) => void;
+  onSetVerseOfWeek: (verse: Verse) => void;
 }
 
 export function VerseList({
@@ -18,6 +19,7 @@ export function VerseList({
   isLoading = false,
   onEdit,
   onDelete,
+  onSetVerseOfWeek,
 }: VerseListProps) {
   const [viewMode, setViewMode] = useState<'table' | 'cards'>('table');
 
@@ -68,6 +70,18 @@ export function VerseList({
   const actions = (verse: Verse) => (
     <div className="table-actions">
       <button
+        onClick={() => onSetVerseOfWeek(verse)}
+        className={cn(
+          'action-btn',
+          verse.isVerseOfWeek
+            ? 'text-yellow-500 bg-yellow-50 dark:bg-yellow-900/20'
+            : 'action-btn-edit'
+        )}
+        title={verse.isVerseOfWeek ? 'Долоо хоногийн ишлэл' : 'Долоо хоногийн ишлэл болгох'}
+      >
+        <Star className={cn('h-4 w-4', verse.isVerseOfWeek && 'fill-current')} />
+      </button>
+      <button
         onClick={() => onEdit(verse)}
         className="action-btn action-btn-edit"
         title="Засах"
@@ -85,12 +99,10 @@ export function VerseList({
   );
 
   if (isLoading) {
-    return (
-      <div className="animate-pulse space-y-4">
-        {[...Array(5)].map((_, i) => (
-          <div key={i} className="h-24 bg-gray-100 dark:bg-gray-800 rounded-lg" />
-        ))}
-      </div>
+    return viewMode === 'table' ? (
+      <TableSkeleton rows={5} columns={4} />
+    ) : (
+      <CardGridSkeleton cards={6} columns={3} />
     );
   }
 
@@ -164,6 +176,19 @@ export function VerseList({
                   </p>
                 )}
                 <div className="flex items-center justify-end gap-2 pt-3 border-t border-gray-100 dark:border-gray-700">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => onSetVerseOfWeek(verse)}
+                    className={cn(
+                      verse.isVerseOfWeek
+                        ? 'text-yellow-500 hover:text-yellow-600 hover:bg-yellow-50 dark:hover:bg-yellow-900/20'
+                        : ''
+                    )}
+                    leftIcon={<Star className={cn('h-3.5 w-3.5', verse.isVerseOfWeek && 'fill-current')} />}
+                  >
+                    {verse.isVerseOfWeek ? 'Идэвхтэй' : '7 хоног'}
+                  </Button>
                   <Button
                     variant="ghost"
                     size="sm"

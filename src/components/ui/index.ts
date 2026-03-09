@@ -18,8 +18,8 @@ export { Table } from './Table';
 export { Badge } from './Badge';
 export type { BadgeProps } from './Badge';
 
-export { Loader, PageLoader, Skeleton } from './Loader';
-export type { LoaderProps, PageLoaderProps, SkeletonProps } from './Loader';
+export { Loader, PageLoader, Skeleton, TableSkeleton, CardGridSkeleton } from './Loader';
+export type { LoaderProps, PageLoaderProps, SkeletonProps, TableSkeletonProps, CardGridSkeletonProps } from './Loader';
 
 export { FileUpload } from './FileUpload';
 export type { FileUploadProps } from './FileUpload';
